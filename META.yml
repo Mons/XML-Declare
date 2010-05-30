@@ -1,0 +1,34 @@
+---
+abstract: 'Create XML documents with declaration style'
+author:
+  - 'Mons Anderson, C<< <mons at cpan.org> >>'
+  - 'Mons Anderson <mons@cpan.org>'
+build_requires:
+  ExtUtils::MakeMaker: 6.42
+  Test::More: 0
+  Test::NoWarnings: 0
+  lib::abs: 0.90
+configure_requires:
+  ExtUtils::MakeMaker: 6.42
+distribution_type: module
+generated_by: 'Module::Install version 0.95'
+license: perl
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: 1.4
+name: XML-Declare
+no_index:
+  directory:
+    - inc
+    - t
+    - xt
+provides:
+  XML::Declare:
+    file: lib/XML/Declare.pm
+    version: 0.01
+requires:
+  XML::LibXML: 1.70
+  perl: 5.8.8
+resources:
+  license: http://dev.perl.org/licenses/
+version: 0.01
