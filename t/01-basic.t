@@ -1,6 +1,7 @@
 #!/usr/bin/env perl -w
 
-use uni::perl;
+use strict;
+use warnings;
 use lib::abs '../lib';
 use Test::More tests => 20;
 use Test::NoWarnings ();
