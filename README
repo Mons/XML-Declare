@@ -45,12 +45,28 @@ SYNOPSIS
 
 EXPORT
   doc BLOCK [ $version, $charset ];
-=head2 element $name, SUB
-=head2 element $name, ATTRS
-=head2 attr $name, $value
-=head2 text $content
-=head2 cdata $content
-=head2 comment $content
+    Create XML::LibXML::Document;
+
+  element $name, sub { ... };
+    Create XML::LibXML::Element with name $name; everything, called within
+    "sub { ... }" will be appended as children to this element
+
+  element $name, ATTRS
+    Create XML::LibXML::Element with name $name and set it's attributes.
+    "ATTRS" is a pairs of "key =" "value">
+
+  attr $name, $value
+    Create XML::LibXML::Attribute with name $name and value $value
+
+  text $content
+    Create XML::LibXML::Text node with content $content
+
+  cdata $content
+    Create XML::LibXML::CDATASection node with content $content
+
+  comment $content
+    Create XML::LibXML::Comment node with content $content
+
 AUTHOR
     Mons Anderson, "<mons at cpan.org>"
 

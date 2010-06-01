@@ -16,7 +16,7 @@ XML::Declare - Create XML documents with declaration style
 
 =cut
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 =head1 SYNOPSIS
 
@@ -64,12 +64,32 @@ our $VERSION = '0.02';
 =head1 EXPORT
 
 =head2 doc BLOCK [ $version, $charset ];
-=head2 element $name, SUB
+
+Create L<XML::LibXML::Document>;
+
+=head2 element $name, sub { ... };
+
+Create L<XML::LibXML::Element> with name C<$name>; everything, called within C<sub { ... }> will be appended as children to this element
+
 =head2 element $name, ATTRS
+
+Create L<XML::LibXML::Element> with name C<$name> and set it's attributes. C<ATTRS> is a pairs of C<key => "value">
+
 =head2 attr $name, $value
+
+Create L<XML::LibXML::Attribute> with name C<$name> and value C<$value>
+
 =head2 text $content
+
+Create L<XML::LibXML::Text> node with content C<$content>
+
 =head2 cdata $content
+
+Create L<XML::LibXML::CDATASection> node with content C<$content>
+
 =head2 comment $content
+
+Create L<XML::LibXML::Comment> node with content C<$content>
 
 =cut
 
