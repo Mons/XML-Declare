@@ -10,6 +10,7 @@ build_requires 'Test::NoWarnings';
 build_requires 'lib::abs',  '0.90';
 
 requires 'XML::LibXML', '1.70';
+requires 'Scalar::Util';
 
 auto_provides;
 auto_install;

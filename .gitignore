@@ -2,6 +2,7 @@ blib*
 inc*
 Makefile
 Makefile.old
+MANIFEST.bak
 Build
 Build.bat
 _build*
@@ -12,3 +13,4 @@ cover_db
 pod2htm*.tmp
 XML-Declare-*
 !dist/*.tar.gz
+.#*

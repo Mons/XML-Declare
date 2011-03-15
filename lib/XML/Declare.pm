@@ -1,7 +1,13 @@
 package # hide
 	XML::LibXML::Node;
-	use overload '""' => 'toString',
-	fallback => 1;
+	use Scalar::Util ();
+	use overload
+		#'""'   => 'toString', # this seems to be broken
+		'""'   => sub { $_[0]->toString },
+		'bool' => sub { 1 },
+		'0+'   => sub { Scalar::Util::refaddr($_[0]) },
+		fallback => 1,
+	;
 
 package XML::Declare;
 
@@ -16,7 +22,7 @@ XML::Declare - Create XML documents with declaration style
 
 =cut
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 =head1 SYNOPSIS
 
