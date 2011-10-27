@@ -27,3 +27,6 @@ is $obool,$bool, 'bool is ok';
 is $onum,$num, 'num is ok';
 
 Test::NoWarnings::had_no_warnings();
+
+exit;
+require Test::NoWarnings; # Stupid hack for cpants::kwalitee

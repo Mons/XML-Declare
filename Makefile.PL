@@ -2,7 +2,6 @@ use inc::Module::Install;
 
 name     'XML-Declare';
 all_from 'lib/XML/Declare.pm';
-author   q{Mons Anderson <mons@cpan.org>};
 license  'perl';
 
 build_requires 'Test::More';

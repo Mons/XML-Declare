@@ -22,7 +22,7 @@ XML::Declare - Create XML documents with declaration style
 
 =cut
 
-our $VERSION = '0.04';
+our $VERSION = '0.05';
 
 =head1 SYNOPSIS
 
@@ -115,27 +115,42 @@ sub import {
 }
 
 {
-	our $document;
+	our $is_doc;
 	our $element;
-	our @EL;
 	sub element ($;$@);
 	sub attr (@);
+	sub _attr(@) {
+			eval {
+				$element->setAttribute(@_);
+				1;
+			} or do {
+				( my $e = $@ ) =~ s{ at \S+? line \d+\.\s*$}{};
+				croak $e;
+			};
+	}
 	sub text ($);
+	sub _text ($) {
+			$element->appendChild(XML::LibXML::Text->new(shift));
+	}
 	sub cdata ($);
+	sub _cdata ($) {
+			$element->appendChild(XML::LibXML::CDATASection->new(shift));
+	}
 	sub comment ($);
+	sub _comment ($) {
+			local $_ = shift;
+			m{--}s and croak "'--' (double-hyphen) MUST NOT occur within comments";
+			substr($_,-1,1) eq '-' and croak "comment MUST NOT end with a '-' (hyphen)";
+			$element->appendChild(XML::LibXML::Comment->new($_));
+	}
 	
-	sub doc (&;$$) {
-		my $code = shift;
-		my $caller = caller;
-		my $version = shift || '1.0';
-		my $encoding = shift || 'utf-8';
-		my $doc = XML::LibXML::Document->new($version, $encoding);
-		local @EL = ();
-		#local $document = $doc;
-		local $element = $doc;
-		no strict 'refs';
-		local *{$caller.'::element'} = sub ($;$@) {
+	sub element($;$@) {
 			my $name = shift;
+			defined $element or
+			local *attr = \&_attr and
+			local *text = \&_text and
+			local *cdata = \&_cdata and
+			local *comment = \&_comment;
 			my ($code,$text);
 			if (@_) {
 				if (ref $_[-1] eq 'CODE') {
@@ -144,6 +159,7 @@ sub import {
 					$text = shift;
 				}
 			}
+			my $new;
 			{
 				#local $element = $doc->createElement($name);
 				local $element;
@@ -160,50 +176,55 @@ sub import {
 					$element->setAttribute($attr, ref $val eq 'ARRAY' ? @$val : $val);
 				}
 				if ($code) {
-					local @EL = ();
+					local $is_doc;
 					$code->() if $code;
-					$element->appendChild($_) for @EL;
+					#$element->appendChild($_) for @EL;
 				}
-				push @EL,$element;
-				return $element;
+				#push @EL,$element;
+				$new = $element;
 			}
+			if (defined $is_doc) {
+				if ( $is_doc > 0 ) {
+					$element->appendChild($new);
+				} else {
+					$element->setDocumentElement($new);
+					$is_doc++;
+				}
+			} elsif (defined $element) {
+				$element->appendChild($new);
+			} else {
+				return $new;
+			}
+		
+	}
+	
+	sub doc (&;$$) {
+		my $code = shift;
+		my $version = shift || '1.0';
+		my $encoding = shift || 'utf-8';
+		my $doc = XML::LibXML::Document->new($version, $encoding);
+		my $oldwarn = $SIG{__WARN__};
+		local $SIG{__WARN__} = sub {
+			my $warn = shift;
+			substr($warn, rindex($warn, ' at '),-1,'');
+			chomp $warn;
+			local $SIG{__WARN__} = $oldwarn if defined $oldwarn;
+			Carp::carp $warn;
 		};
-		local *{$caller.'::attr'} = sub (@) {
-			eval {
-				$element->setAttribute(@_);
-				1;
-			} or do {
-				( my $e = $@ ) =~ s{ at \S+? line \d+\.\s*$}{};
-				croak $e;
-			};
-		};
-		local *{$caller.'::text'} = sub ($) {
-			my $n = XML::LibXML::Text->new(shift);
-			#my $tn = $doc->createTextNode(shift);
-			$element->appendChild($n);
-		};
-		local *{$caller.'::cdata'} = sub ($) {
-			my $n = XML::LibXML::CDATASection->new(shift);
-			$element->appendChild($n);
-		};
-		local *{$caller.'::comment'} = sub ($) {
-			local $_ = shift;
-			m{--}s and croak "'--' (double-hyphen) MUST NOT occur within comments";
-			substr($_,-1,1) eq '-' and croak "comment MUST NOT end with a '-' (hyphen)";
-			my $n = XML::LibXML::Comment->new($_);
-			$element->appendChild($n);
-		};
+		local $element = $doc;
+		no strict 'refs';
+		local *attr = \&_attr;
+		local *text = \&_text;
+		local *cdata = \&_cdata;
+		local *comment = \&_comment;
+		local $is_doc = 0;
 		$code->();
-		if (@EL == 0) {
+		if ($is_doc == 0) {
 			Carp::carp "Empty document";
 		}
-		elsif (@EL == 1) {
-			$doc->setDocumentElement(shift @EL);
-		} else {
+		elsif ($is_doc > 1) {
 			Carp::carp "More than one root element. All except first are ignored";
-			$doc->setDocumentElement(shift @EL);
 		}
-		
 		$doc;
 	}
 }
@@ -211,7 +232,7 @@ sub import {
 
 =head1 AUTHOR
 
-Mons Anderson, C<< <mons at cpan.org> >>
+Mons Anderson <mons@cpan.org>
 
 =head1 LICENSE AND COPYRIGHT
 

@@ -18,10 +18,12 @@ Makefile.PL
 MANIFEST
 MANIFEST.SKIP
 META.yml
+MYMETA.yml
 README
 t/00-load.t
 t/01-basic.t
 t/02-node-overload.t
+t/03-namespace-autoclean.t
 t/pod-coverage.t
 t/pod.t
 xt/99-dist.t
