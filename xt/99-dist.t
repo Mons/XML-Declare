@@ -2,6 +2,7 @@
 
 use lib::abs '../lib';
 use Test::More;
+BEGIN{ -d ".git" or plan skip_all => "Only author"; }
 use Test::Dist;
 use Test::NoWarnings;
 chdir lib::abs::path('..');

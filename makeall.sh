@@ -11,7 +11,7 @@ $perl Makefile.PL && \
 make manifest && \
 make && \
 TEST_AUTHOR=1 make test && \
-TEST_AUTHOR=1 runprove 'xt/*.t' && \
+#TEST_AUTHOR=1 runprove 'xt/*.t' && \
 make disttest && \
 make dist && \
 cp -f *.tar.gz dist/ && \

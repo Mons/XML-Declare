@@ -1,5 +1,8 @@
 Revision history for XML-Declare
 
+0.06    2012-05-29
+        Fix for libxml overloading
+
 0.05    2011-10-26
         Fix work under namespace::[auto]clean
         [#68434] Allow to call element outside document

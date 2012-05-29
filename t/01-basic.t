@@ -29,7 +29,7 @@ is
 	'doc + element'
 	or diag $doc;
 
-XML::LibXML->new->parse_string($doc);
+XML::LibXML->new->parse_string("$doc");
 
 eval { $doc = doc { element '<'; } };
 ok $@, 'bad node name' or diag "No error: $doc";
@@ -43,7 +43,7 @@ is
 	'doc + element + attrs'
 	or diag $doc;
 
-XML::LibXML->new->parse_string($doc);
+XML::LibXML->new->parse_string("$doc");
 
 is 
 	$doc = doc { element test => a => 'attrval', sub { text 'text'; }; },
@@ -51,15 +51,16 @@ is
 	'doc + element-sub'
 	or diag $doc;
 
-XML::LibXML->new->parse_string($doc);
+XML::LibXML->new->parse_string("$doc");
 
-is 
-	$doc = element( test => a => 'attrval', sub { element "a","b";text 'text';element "x","y"; } ),
+# Element have overloaded 'eq' magic, so force stringify
+is +
+	''.($doc = element( test => a => 'attrval', sub { element "a","b";text 'text';element "x","y"; } )),
 	qq{<test a="attrval"><a>b</a>text<x>y</x></test>},
 	'nodoc element + element-sub'
 	or diag $doc;
 
-XML::LibXML->new->parse_string($doc);
+XML::LibXML->new->parse_string("$doc");
 
 is 
 	$doc = doc { element test => sub { text 'text'; attr a => 'attrval'; }; },
@@ -67,14 +68,14 @@ is
 	'doc + element-sub + attr'
 	or diag $doc;
 
-XML::LibXML->new->parse_string($doc);
+XML::LibXML->new->parse_string("$doc");
 
 is 
 	$doc = doc { element test => sub { text 'text'; attr a => 'attrval'; comment 'zzzz'; cdata 'something <![CDATA[:)]]>'; }; },
 	qq{<?xml version="1.0" encoding="utf-8"?>\n<test a="attrval">text<!--zzzz--><![CDATA[something <![CDATA[:)]]]]><![CDATA[>]]></test>\n},
 	'doc + element-sub + attr,comm,cdata';
 
-XML::LibXML->new->parse_string($doc);
+XML::LibXML->new->parse_string("$doc");
 
 eval { $doc = doc { element test => sub { comment '--'; } } };
 like $@, qr/double-hyphen.* MUST NOT occur within/i, 'comment with --' or diag "No error: $doc";
@@ -83,11 +84,11 @@ eval { $doc = doc { element test => sub { comment 'test-'; } } };
 like $@, qr/MUST NOT end with .*hyphen/i, 'comment with -' or diag "No error: $doc";
 
 $doc = doc { element test => sub { comment '-B, B+, B, or B- '; }; };
-$back = XML::LibXML->new->parse_string($doc);
+$back = XML::LibXML->new->parse_string("$doc");
 is $back->documentElement->firstChild->textContent, "-B, B+, B, or B- ", 'comment parsed back';
 
 $doc = doc { element test => sub { cdata '<![CDATA[:)]]>'; } };
-$back = XML::LibXML->new->parse_string($doc);
+$back = XML::LibXML->new->parse_string("$doc");
 is $back->documentElement->firstChild->textContent, '<![CDATA[:)]]>', 'cdata parsed back';
 
 Test::NoWarnings::had_no_warnings();

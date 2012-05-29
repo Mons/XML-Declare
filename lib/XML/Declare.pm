@@ -1,14 +1,36 @@
+# XML::LibXML > 1.90 overloads Element
+use XML::LibXML ();
+
+{
 package # hide
 	XML::LibXML::Node;
 	use Scalar::Util ();
-	use overload
-		#'""'   => 'toString', # this seems to be broken
-		'""'   => sub { $_[0]->toString },
-		'bool' => sub { 1 },
-		'0+'   => sub { Scalar::Util::refaddr($_[0]) },
-		fallback => 1,
-	;
-
+	use overload ();
+	BEGIN {
+		my $overloaded = sub {
+			my ($m) = @_;
+			overload::ov_method(overload::mycan(__PACKAGE__,'('.$m),__PACKAGE__);
+		};
+		overload->import( '""'   => sub { $_[0]->toString() } )            unless $overloaded->('""');
+		overload->import( 'bool' => sub { 1 } )                            unless $overloaded->('bool');
+		overload->import( '0+'   => sub { Scalar::Util::refaddr($_[0]) } ) unless $overloaded->('0+');
+		overload->import( fallback => 1 );
+	}
+}
+{
+package # hide
+	XML::LibXML::Element;
+	use overload ();
+	BEGIN {
+		my $overloaded = sub {
+			my ($m) = @_;
+			overload::ov_method(overload::mycan(__PACKAGE__,'('.$m),__PACKAGE__);
+		};
+		overload->import( '""'   => sub { $_[0]->toString() } )            unless $overloaded->('""');
+		overload->import( fallback => 1 ) if $overloaded->('bool');
+		
+	}
+}
 package XML::Declare;
 
 use 5.008008;
@@ -22,7 +44,7 @@ XML::Declare - Create XML documents with declaration style
 
 =cut
 
-our $VERSION = '0.05';
+our $VERSION = '0.06';
 
 =head1 SYNOPSIS
 
@@ -164,24 +186,24 @@ sub import {
 				#local $element = $doc->createElement($name);
 				local $element;
 				eval {
-					$element = XML::LibXML::Element->new($name);
-					$element->setNodeName($name); # Will invoke checks
+					$new = XML::LibXML::Element->new($name);
+					$new->setNodeName($name); # Will invoke checks
 					1;
 				} or do {
 					( my $e = $@ ) =~ s{ at \S+? line \d+\.\s*$}{};
 					croak $e;
 				};
-				$element->appendText($text) if defined $text;
+				$new->appendText($text) if defined $text;
 				while (my( $attr,$val ) = splice @_, 0, 2) {
-					$element->setAttribute($attr, ref $val eq 'ARRAY' ? @$val : $val);
+					$new->setAttribute($attr, ref $val eq 'ARRAY' ? @$val : $val);
 				}
-				if ($code) {
+				if ($code) {{
+					local $element = $new;
 					local $is_doc;
 					$code->() if $code;
 					#$element->appendChild($_) for @EL;
-				}
+				}}
 				#push @EL,$element;
-				$new = $element;
 			}
 			if (defined $is_doc) {
 				if ( $is_doc > 0 ) {
@@ -190,8 +212,10 @@ sub import {
 					$element->setDocumentElement($new);
 					$is_doc++;
 				}
+				return;
 			} elsif (defined $element) {
 				$element->appendChild($new);
+				return;
 			} else {
 				return $new;
 			}
